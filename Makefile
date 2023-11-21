@@ -5,6 +5,8 @@
 # @version 0.0
 VERSION    = 0.0
 PKG_CONFIG = pkg-config
+PKG_EXISTS = $(PKG_CONFIG) --exists
+SD_BUS     = $(shell { $(PKG_EXISTS) libsystemd && echo "libsystemd"; } || { $(PKG_EXISTS) libelogind && echo "libelogind"; } || { $(PKG_EXISTS) basu && echo "basu"; } || exit 1; )
 
 # paths
 PREFIX = /usr/local
@@ -12,11 +14,15 @@ MANDIR = $(PREFIX)/share/man
 SRCDIR = src
 
 PKGS   = wayland-client wayland-cursor pangocairo
+PKGS  += $(SD_BUS)
 FILES  = $(SRCDIR)/main.c $(SRCDIR)/main.h $(SRCDIR)/log.c $(SRCDIR)/log.h \
 		 $(SRCDIR)/render.c $(SRCDIR)/render.h $(SRCDIR)/event.c $(SRCDIR)/event.h \
 		 $(SRCDIR)/util.c $(SRCDIR)/util.h $(SRCDIR)/shm.c $(SRCDIR)/shm.h \
 		 $(SRCDIR)/input.c $(SRCDIR)/input.h $(SRCDIR)/user.c $(SRCDIR)/user.h \
 		 $(SRCDIR)/bar.c $(SRCDIR)/bar.h $(SRCDIR)/config.h
+FILES += $(SRCDIR)/lib.h $(SRCDIR)/icon.c $(SRCDIR)/icon.h $(SRCDIR)/item.c $(SRCDIR)/item.h \
+		 $(SRCDIR)/host.c $(SRCDIR)/host.h $(SRCDIR)/watcher.c $(SRCDIR)/watcher.h \
+		 $(SRCDIR)/tray.c $(SRCDIR)/tray.h
 OBJS   = $(SRCDIR)/xdg-output-unstable-v1-protocol.o $(SRCDIR)/xdg-shell-protocol.o \
 		 $(SRCDIR)/wlr-layer-shell-unstable-v1-protocol.o
 OBJS  := $(filter-out $(SRCDIR)/xdg-output-unstable-v1-protocol.o,$(OBJS))
@@ -57,14 +63,21 @@ $(SRCDIR)/dwl-ipc-unstable-v2-protocol.h:
 $(SRCDIR)/dwl-ipc-unstable-v2-protocol.c:
 	$(WAYLAND_SCANNER) private-code \
 		protocols/dwl-ipc-unstable-v2.xml $@
+$(SRCDIR)/lib.h:
+	touch $(SRCDIR)/lib.h
+	printf "#ifndef LIB_H_\n#define LIB_H_\n\n" > $(SRCDIR)/lib.h
+	{ $(PKG_EXISTS) libsystemd && printf "#define SYSTEMD 1\n" | tee -a $(SRCDIR)/lib.h; } || printf "#define SYSTEMD 0\n" | tee -a $(SRCDIR)/lib.h;
+	{ $(PKG_EXISTS) libelogind && printf "#define ELOGIND 1\n" | tee -a $(SRCDIR)/lib.h; } || printf "#define ELOGIND 0\n" | tee -a $(SRCDIR)/lib.h;
+	{ $(PKG_EXISTS) basu && printf "#define BASU 1\n\n" | tee -a $(SRCDIR)/lib.h; } || printf "#define BASU 0\n\n" | tee -a $(SRCDIR)/lib.h;
+	printf "#endif // LIB_H_" | tee -a $(SRCDIR)/lib.h
 
 $(SRCDIR)/config.h:
 	cp src/config.def.h $@
 
-dev: clean $(SRCDIR)/config.h $(OBJS)
+dev: clean $(SRCDIR)/lib.h $(SRCDIR)/config.h $(OBJS)
 
 clean:
-	rm -f dwl-bar src/config.h src/*.o src/*-protocol.*
+	rm -f dwl-bar src/config.h src/lib.h src/*.o src/*-protocol.*
 
 dist: clean
 	mkdir -p dwl-bar-$(VERSION)
