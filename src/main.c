@@ -88,20 +88,20 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
     .ping = xdg_wm_base_ping,
 };
 static const struct zdwl_ipc_manager_v2_listener zdwl_manager_listener = {
-    .layout = zdwl_ipc_manager_layout,
     .tags = zdwl_ipc_manager_tags,
+    .layout = zdwl_ipc_manager_layout,
 };
 static const struct zdwl_ipc_output_v2_listener zdwl_output_listener = {
+  .toggle_visibility = zdwl_ipc_output_toggle_visibility,
     .active = zdwl_ipc_output_active,
+    .tag = zdwl_ipc_output_tag,
+    .layout = zdwl_ipc_output_layout,
+    .title = zdwl_ipc_output_title,
     .appid = zdwl_ipc_output_appid,
-    .floating = zdwl_ipc_output_floating,
+    .layout_symbol = zdwl_ipc_output_layout_symbol,
     .frame = zdwl_ipc_output_frame,
     .fullscreen = zdwl_ipc_output_fullscreen,
-    .layout = zdwl_ipc_output_layout,
-    .layout_symbol = zdwl_ipc_output_layout_symbol,
-    .tag = zdwl_ipc_output_tag,
-    .title = zdwl_ipc_output_title,
-    .toggle_visibility = zdwl_ipc_output_toggle_visibility,
+    .floating = zdwl_ipc_output_floating,
 };
 
 void check_global(void *global, const char *name) {
@@ -341,7 +341,7 @@ void registry_global_add(void *data, struct wl_registry *registry, uint32_t name
         }
     }
     else if (STRING_EQUAL(interface, zwlr_layer_shell_v1_interface.name))
-        shell = wl_registry_bind(registry, name, &zwlr_layer_shell_v1_interface, 4);
+        shell = wl_registry_bind(registry, name, &zwlr_layer_shell_v1_interface, 3);
 }
 
 void registry_global_remove(void *data, struct wl_registry *registry, uint32_t name) {

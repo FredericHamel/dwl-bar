@@ -9,7 +9,7 @@ static const int show_bar = 1;
 static const int bar_top = 1;          /* Boolean value, non-zero is true. If not top then bottom */
 static const int status_on_active = 1; /* Display the status on active monitor only. If not then on all. */
 static const char *font = "Monospace 10";
-static const char *terminal[] = { "alacritty", NULL };
+static const char *terminal[] = { "foot", NULL };
 static const char *icon_theme = "Hicolor";
 
 /*
