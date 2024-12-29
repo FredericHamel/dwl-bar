@@ -135,9 +135,12 @@ struct Pointer *pointer_create(struct wl_seat *seat) {
 void pointer_destroy(struct Pointer *pointer) {
     if (!pointer) return;
 
-    wl_pointer_release(pointer->pointer);
-    wl_surface_destroy(pointer->cursor_surface);
-    wl_cursor_theme_destroy(pointer->cursor_theme);
+    if (pointer->pointer)
+      wl_pointer_release(pointer->pointer);
+    if (pointer->cursor_surface)
+      wl_surface_destroy(pointer->cursor_surface);
+    if (pointer->cursor_theme)
+      wl_cursor_theme_destroy(pointer->cursor_theme);
     list_elements_destroy(pointer->buttons, free);
     free(pointer);
 }
