@@ -165,7 +165,7 @@ int register_to_watcher(struct Host *host) {
     if (sd_bus_call_method_async(host->tray->bus, NULL,
 			host->interface, watcher_path,
 			"org.freedesktop.DBus.Properties", "Get",
-			get_registered_items_callback, host, "ss",
+			get_registered_items_callback, host->tray, "ss",
 			host->interface, "RegisteredStatusNotifierItems") < 0)
         return 0;
 
